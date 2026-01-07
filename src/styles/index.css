@@ -153,3 +153,52 @@ tbody tr {
   height: 300px;
   width: 100%;
 }
+
+.axis-controls {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.axis-control-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.axis-control-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #495057;
+  white-space: nowrap;
+}
+
+.range-inputs {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.range-inputs input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 13px;
+  text-align: center;
+}
+
+.range-inputs input:focus {
+  outline: none;
+  border-color: #4CAF50;
+  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+}
+
+.range-inputs span {
+  color: #6c757d;
+  font-weight: 500;
+}

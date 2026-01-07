@@ -45,6 +45,7 @@ const App = () => {
         cols={12}
         rowHeight={200}
         width={1200}
+        margin={[20, 40]}
         isDraggable={true}
         isResizable={true}
         compactType="vertical"
