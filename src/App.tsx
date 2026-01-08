@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import GridLayout, { Layout } from 'react-grid-layout';
 import { ChartComponent } from './components/ChartComponent';
+import { RechartsComponent } from './components/RechartsComponent';
+import { VictoryComponent } from './components/VictoryComponent';
+import { EChartsComponent } from './components/EChartsComponent';
+import { ApexChartsComponent } from './components/ApexChartsComponent';
 import { TableComponent, WorkSchedule } from './components/TableComponent';
 import 'react-grid-layout/css/styles.css';
 import 'react-grid-layout/css/styles.css';
@@ -8,8 +12,12 @@ import './styles/index.css';
 
 const App = () => {
   const [layouts] = useState<Layout[]>([
-    { i: 'line-chart', x: 0, y: 0, w: 12, h: 2 },
-    { i: 'table', x: 0, y: 2, w: 12, h: 2 },
+    { i: 'table', x: 0, y: 0, w: 12, h: 2 },
+    { i: 'chartjs-chart', x: 0, y: 2, w: 6, h: 2 },
+    { i: 'recharts-chart', x: 6, y: 2, w: 6, h: 2 },
+    { i: 'victory-chart', x: 0, y: 4, w: 6, h: 2 },
+    { i: 'echarts-chart', x: 6, y: 4, w: 6, h: 2 },
+    { i: 'apexcharts-chart', x: 0, y: 6, w: 12, h: 2 },
   ]);
 
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
@@ -45,18 +53,30 @@ const App = () => {
         cols={12}
         rowHeight={200}
         width={1200}
-        margin={[20, 40]}
+        margin={[20, 60]}
         isDraggable={true}
         isResizable={true}
         compactType="vertical"
         preventCollision={false}
         draggableHandle=".drag-handle"
       >
-        <div key="line-chart">
-          <ChartComponent title="Hourly Work Schedule" scheduleData={chartData} />
-        </div>
         <div key="table">
           <TableComponent title="Work Schedule List" onRowSelect={handleRowSelect} />
+        </div>
+        <div key="chartjs-chart">
+          <ChartComponent title="Chart.js" scheduleData={chartData} />
+        </div>
+        <div key="recharts-chart">
+          <RechartsComponent title="Recharts" scheduleData={chartData} />
+        </div>
+        <div key="victory-chart">
+          <VictoryComponent title="Victory" scheduleData={chartData} />
+        </div>
+        <div key="echarts-chart">
+          <EChartsComponent title="ECharts" scheduleData={chartData} />
+        </div>
+        <div key="apexcharts-chart">
+          <ApexChartsComponent title="ApexCharts" scheduleData={chartData} />
         </div>
       </GridLayout>
     </div>
