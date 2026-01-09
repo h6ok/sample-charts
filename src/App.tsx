@@ -4,6 +4,7 @@ import { ChartComponent } from './components/ChartComponent';
 import { RechartsComponent } from './components/RechartsComponent';
 import { NivoComponent } from './components/NivoComponent';
 import { ApexChartsComponent } from './components/ApexChartsComponent';
+import { D3ChartComponent } from './components/D3ChartComponent';
 import { TableComponent, WorkSchedule } from './components/TableComponent';
 import 'react-grid-layout/css/styles.css';
 import 'react-grid-layout/css/styles.css';
@@ -16,6 +17,7 @@ const App = () => {
     { i: 'recharts-chart', x: 6, y: 2, w: 6, h: 2 },
     { i: 'nivo-chart', x: 0, y: 4, w: 6, h: 2 },
     { i: 'apexcharts-chart', x: 6, y: 4, w: 6, h: 2 },
+    { i: 'd3-chart', x: 0, y: 6, w: 6, h: 2 },
   ]);
 
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
@@ -86,6 +88,9 @@ const App = () => {
         </div>
         <div key="apexcharts-chart">
           <ApexChartsComponent title="ApexCharts" scheduleData={chartData} />
+        </div>
+        <div key="d3-chart">
+          <D3ChartComponent title="D3.js" scheduleData={chartData} />
         </div>
       </GridLayout>
     </div>
