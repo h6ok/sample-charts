@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import ReactECharts from 'echarts-for-react';
+import { ResponsiveLine } from '@nivo/line';
 
-interface EChartsComponentProps {
+interface NivoComponentProps {
   title: string;
   scheduleData?: {
     date: string;
@@ -11,7 +11,7 @@ interface EChartsComponentProps {
   } | null;
 }
 
-export const EChartsComponent = ({ title, scheduleData }: EChartsComponentProps) => {
+export const NivoComponent = ({ title, scheduleData }: NivoComponentProps) => {
   const defaultPlanned = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 2, 1, 1, 2, 2, 1, 1, 0, 0, 0, 0, 0, 0];
   const defaultActual = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0.5, 1.5, 2, 1, 0.5, 2, 1.5, 1, 0, 0, 0, 0, 0, 0, 0];
 
@@ -35,70 +35,25 @@ export const EChartsComponent = ({ title, scheduleData }: EChartsComponentProps)
     return acc;
   }, []);
 
-  const option = {
-    tooltip: {
-      trigger: 'axis',
+  // Nivo用のデータ形式に変換
+  const nivoData = [
+    {
+      id: 'Cumulative Planned Hours',
+      color: 'hsl(180, 70%, 50%)',
+      data: Array.from({ length: 24 }, (_, i) => ({
+        x: i,
+        y: cumulativePlanned[i],
+      })).filter(d => d.x >= xMin && d.x <= xMax),
     },
-    legend: {
-      data: ['Cumulative Planned Hours', 'Cumulative Actual Hours'],
-      top: 0,
+    {
+      id: 'Cumulative Actual Hours',
+      color: 'hsl(350, 70%, 50%)',
+      data: Array.from({ length: 24 }, (_, i) => ({
+        x: i,
+        y: cumulativeActual[i],
+      })).filter(d => d.x >= xMin && d.x <= xMax),
     },
-    grid: {
-      left: '3%',
-      right: '4%',
-      bottom: '15%',
-      containLabel: true,
-    },
-    xAxis: {
-      type: 'category',
-      name: 'Time',
-      nameLocation: 'middle',
-      nameGap: 30,
-      data: Array.from({ length: 24 }, (_, i) => `${i}:00`),
-      min: xMin,
-      max: xMax,
-    },
-    yAxis: {
-      type: 'value',
-      name: 'Cumulative Hours',
-      min: yMin === '' ? undefined : yMin,
-      max: yMax === '' ? undefined : yMax,
-    },
-    series: [
-      {
-        name: 'Cumulative Planned Hours',
-        type: 'line',
-        data: cumulativePlanned,
-        smooth: true,
-        lineStyle: {
-          color: '#4BC0C0',
-          width: 2,
-        },
-        itemStyle: {
-          color: '#4BC0C0',
-        },
-        areaStyle: {
-          color: 'rgba(75, 192, 192, 0.2)',
-        },
-      },
-      {
-        name: 'Cumulative Actual Hours',
-        type: 'line',
-        data: cumulativeActual,
-        smooth: true,
-        lineStyle: {
-          color: '#FF6384',
-          width: 2,
-        },
-        itemStyle: {
-          color: '#FF6384',
-        },
-        areaStyle: {
-          color: 'rgba(255, 99, 132, 0.2)',
-        },
-      },
-    ],
-  };
+  ];
 
   return (
     <div className="grid-item">
@@ -159,7 +114,58 @@ export const EChartsComponent = ({ title, scheduleData }: EChartsComponentProps)
       </div>
 
       <div className="chart-container">
-        <ReactECharts option={option} style={{ height: '100%', width: '100%' }} />
+        <ResponsiveLine
+          data={nivoData}
+          margin={{ top: 20, right: 110, bottom: 50, left: 60 }}
+          xScale={{ type: 'linear', min: xMin, max: xMax }}
+          yScale={{
+            type: 'linear',
+            min: yMin === '' ? 'auto' : yMin,
+            max: yMax === '' ? 'auto' : yMax,
+          }}
+          axisBottom={{
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: 'Time',
+            legendOffset: 36,
+            legendPosition: 'middle',
+            format: (value) => `${value}:00`,
+          }}
+          axisLeft={{
+            tickSize: 5,
+            tickPadding: 5,
+            tickRotation: 0,
+            legend: 'Cumulative Hours',
+            legendOffset: -50,
+            legendPosition: 'middle',
+          }}
+          colors={{ scheme: 'category10' }}
+          pointSize={6}
+          pointColor={{ theme: 'background' }}
+          pointBorderWidth={2}
+          pointBorderColor={{ from: 'serieColor' }}
+          enableArea={true}
+          areaOpacity={0.2}
+          useMesh={true}
+          legends={[
+            {
+              anchor: 'bottom-right',
+              direction: 'column',
+              justify: false,
+              translateX: 100,
+              translateY: 0,
+              itemsSpacing: 0,
+              itemDirection: 'left-to-right',
+              itemWidth: 80,
+              itemHeight: 20,
+              itemOpacity: 0.75,
+              symbolSize: 12,
+              symbolShape: 'circle',
+              symbolBorderColor: 'rgba(0, 0, 0, .5)',
+            },
+          ]}
+        />
       </div>
     </div>
   );

@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import GridLayout, { Layout } from 'react-grid-layout';
 import { ChartComponent } from './components/ChartComponent';
 import { RechartsComponent } from './components/RechartsComponent';
-import { VictoryComponent } from './components/VictoryComponent';
-import { EChartsComponent } from './components/EChartsComponent';
+import { NivoComponent } from './components/NivoComponent';
 import { ApexChartsComponent } from './components/ApexChartsComponent';
 import { TableComponent, WorkSchedule } from './components/TableComponent';
 import 'react-grid-layout/css/styles.css';
@@ -15,12 +14,25 @@ const App = () => {
     { i: 'table', x: 0, y: 0, w: 12, h: 2 },
     { i: 'chartjs-chart', x: 0, y: 2, w: 6, h: 2 },
     { i: 'recharts-chart', x: 6, y: 2, w: 6, h: 2 },
-    { i: 'victory-chart', x: 0, y: 4, w: 6, h: 2 },
-    { i: 'echarts-chart', x: 6, y: 4, w: 6, h: 2 },
-    { i: 'apexcharts-chart', x: 0, y: 6, w: 12, h: 2 },
+    { i: 'nivo-chart', x: 0, y: 4, w: 6, h: 2 },
+    { i: 'apexcharts-chart', x: 6, y: 4, w: 6, h: 2 },
   ]);
 
   const [selectedSchedule, setSelectedSchedule] = useState<WorkSchedule | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(1200);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const updateWidth = () => {
+      if (containerRef.current) {
+        setContainerWidth(containerRef.current.offsetWidth);
+      }
+    };
+
+    updateWidth();
+    window.addEventListener('resize', updateWidth);
+    return () => window.removeEventListener('resize', updateWidth);
+  }, []);
 
   const handleRowSelect = (schedule: WorkSchedule | null) => {
     setSelectedSchedule(schedule);
@@ -34,7 +46,7 @@ const App = () => {
   } : null;
 
   return (
-    <div className="dashboard">
+    <div className="dashboard" ref={containerRef}>
       <div className="dashboard-header">
         <h1>Work Schedule Dashboard</h1>
         <p>
@@ -52,7 +64,7 @@ const App = () => {
         layout={layouts}
         cols={12}
         rowHeight={200}
-        width={1200}
+        width={containerWidth}
         margin={[20, 60]}
         isDraggable={true}
         isResizable={true}
@@ -69,11 +81,8 @@ const App = () => {
         <div key="recharts-chart">
           <RechartsComponent title="Recharts" scheduleData={chartData} />
         </div>
-        <div key="victory-chart">
-          <VictoryComponent title="Victory" scheduleData={chartData} />
-        </div>
-        <div key="echarts-chart">
-          <EChartsComponent title="ECharts" scheduleData={chartData} />
+        <div key="nivo-chart">
+          <NivoComponent title="Nivo" scheduleData={chartData} />
         </div>
         <div key="apexcharts-chart">
           <ApexChartsComponent title="ApexCharts" scheduleData={chartData} />

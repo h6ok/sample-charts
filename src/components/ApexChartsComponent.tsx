@@ -56,21 +56,18 @@ export const ApexChartsComponent = ({ title, scheduleData }: ApexChartsComponent
   const options: ApexOptions = {
     chart: {
       type: 'line',
-      height: 350,
-      zoom: {
-        enabled: true,
-      },
       toolbar: {
         show: true,
       },
+      animations: {
+        enabled: false,
+      },
     },
-    colors: ['#4BC0C0', '#FF6384'],
     dataLabels: {
       enabled: false,
     },
     stroke: {
-      curve: 'smooth',
-      width: 2,
+      curve: 'straight',
     },
     legend: {
       position: 'top',
@@ -91,18 +88,15 @@ export const ApexChartsComponent = ({ title, scheduleData }: ApexChartsComponent
       min: yMin === '' ? undefined : yMin,
       max: yMax === '' ? undefined : yMax,
     },
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.4,
-        opacityTo: 0.1,
-        stops: [0, 90, 100],
-      },
-    },
     tooltip: {
+      enabled: true,
       shared: true,
       intersect: false,
+      followCursor: false,
+      fixed: {
+        enabled: true,
+        position: 'topRight',
+      },
       y: {
         formatter: (value: number) => `${value.toFixed(1)} hours`,
       },
@@ -110,7 +104,7 @@ export const ApexChartsComponent = ({ title, scheduleData }: ApexChartsComponent
   };
 
   return (
-    <div className="grid-item">
+    <div className="grid-item" style={{ overflow: 'visible' }}>
       <div className="drag-handle" title="Drag to move"></div>
       <h3>
         {title}
@@ -167,8 +161,8 @@ export const ApexChartsComponent = ({ title, scheduleData }: ApexChartsComponent
         </div>
       </div>
 
-      <div className="chart-container">
-        <Chart options={options} series={series} type="line" height="100%" />
+      <div className="chart-container" style={{ overflow: 'visible' }}>
+        <Chart options={options} series={series} type="line" height="100%" width="100%" />
       </div>
     </div>
   );
