@@ -130,6 +130,14 @@
   background-color: #f8f9fa;
 }
 
+.tanstack-table tbody tr.selected-row {
+  background-color: #e3f2fd;
+}
+
+.tanstack-table tbody tr.selected-row:hover {
+  background-color: #bbdefb;
+}
+
 .table-info {
   padding: 10px;
   background-color: #e9ecef;

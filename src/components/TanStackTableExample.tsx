@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useReactTable,
   getCoreRowModel,
@@ -16,11 +16,45 @@ export const TanStackTableExample = () => {
   const [data] = useState(() => [...sampleData]);
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
-  const [searchColumn, setSearchColumn] = useState("firstName");
   const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
+  // デバウンス処理
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchValue);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchValue]);
+
+  const toggleRowSelection = (rowId: number) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  };
 
   const columns = useMemo<ColumnDef<EmployeeData>[]>(
     () => [
+      {
+        id: "select",
+        header: "",
+        size: 50,
+        cell: ({ row }) => (
+          <input
+            type="checkbox"
+            checked={selectedRows.has(row.original.id)}
+            onChange={() => toggleRowSelection(row.original.id)}
+          />
+        ),
+      },
       { accessorKey: "id", header: "ID", size: 60 },
       { accessorKey: "employeeId", header: "Employee ID", size: 120 },
       { accessorKey: "firstName", header: "First Name", size: 120 },
@@ -48,17 +82,26 @@ export const TanStackTableExample = () => {
       { accessorKey: "education", header: "Education", size: 120 },
       { accessorKey: "certification", header: "Certification", size: 150 },
     ],
-    []
+    [selectedRows]
   );
 
   const filteredData = useMemo(() => {
-    if (!searchValue) return data;
+    if (!debouncedSearch) return data;
+
+    const lowerSearch = debouncedSearch.toLowerCase();
+    const searchTerms = lowerSearch.split(' ').filter(t => t.length > 0);
 
     return data.filter((row) => {
-      const value = row[searchColumn as keyof EmployeeData];
-      return String(value).toLowerCase().includes(searchValue.toLowerCase());
+      const rowText = Object.entries(row)
+        .filter(([key]) => key !== 'id') // IDは検索対象外
+        .map(([_, value]) => String(value))
+        .join(' ')
+        .toLowerCase();
+
+      // AND検索: すべての単語を含む行のみ
+      return searchTerms.every(term => rowText.includes(term));
     });
-  }, [data, searchColumn, searchValue]);
+  }, [data, debouncedSearch]);
 
   const table = useReactTable({
     data: filteredData,
@@ -81,44 +124,30 @@ export const TanStackTableExample = () => {
       <div className="search-controls">
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="フリーワード検索（スペース区切りでAND検索）..."
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           className="search-input"
-          style={{ width: '300px' }}
+          style={{ width: '400px' }}
         />
-        <select
-          value={searchColumn}
-          onChange={(e) => setSearchColumn(e.target.value)}
-          className="search-select"
-          style={{ width: '200px' }}
-        >
-          {columns.map((col) => {
-            const key = 'accessorKey' in col ? col.accessorKey as string : '';
-            const header = 'header' in col ? col.header as string : '';
-            return (
-              <option key={key} value={key}>
-                {header}
-              </option>
-            );
-          })}
-        </select>
       </div>
 
       <div className="table-layout">
         <div className="column-visibility-sidebar">
           <h3>Column Visibility</h3>
           <div className="checkbox-list">
-            {table.getAllLeafColumns().map((column) => (
-              <label key={column.id} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  checked={column.getIsVisible()}
-                  onChange={column.getToggleVisibilityHandler()}
-                />
-                {column.columnDef.header as string}
-              </label>
-            ))}
+            {table.getAllLeafColumns()
+              .filter((column) => column.id !== "select")
+              .map((column) => (
+                <label key={column.id} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={column.getIsVisible()}
+                    onChange={column.getToggleVisibilityHandler()}
+                  />
+                  {column.columnDef.header as string}
+                </label>
+              ))}
           </div>
         </div>
 
@@ -150,7 +179,10 @@ export const TanStackTableExample = () => {
               </thead>
               <tbody>
                 {table.getRowModel().rows.map((row) => (
-                  <tr key={row.id}>
+                  <tr
+                    key={row.id}
+                    className={selectedRows.has(row.original.id) ? "selected-row" : ""}
+                  >
                     {row.getVisibleCells().map((cell) => (
                       <td key={cell.id} style={{ width: cell.column.getSize() }}>
                         {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -163,7 +195,7 @@ export const TanStackTableExample = () => {
           </div>
 
           <div className="table-info">
-            Total Rows: {filteredData.length} | Visible Columns: {table.getVisibleLeafColumns().length}
+            Total Rows: {filteredData.length} | Visible Columns: {table.getVisibleLeafColumns().length} | Selected: {selectedRows.size}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,10 +9,6 @@ import {
   Paper,
   TableSortLabel,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Checkbox,
   FormControlLabel,
   Box,
@@ -26,8 +22,30 @@ export const MuiTableExample = () => {
   const [data] = useState<EmployeeData[]>([...sampleData]);
   const [order, setOrder] = useState<Order>("asc");
   const [orderBy, setOrderBy] = useState<keyof EmployeeData>("id");
-  const [searchColumn, setSearchColumn] = useState<keyof EmployeeData>("firstName");
   const [searchValue, setSearchValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
+
+  // デバウンス処理
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchValue);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchValue]);
+
+  const toggleRowSelection = (rowId: number) => {
+    setSelectedRows((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowId)) {
+        newSet.delete(rowId);
+      } else {
+        newSet.add(rowId);
+      }
+      return newSet;
+    });
+  };
 
   const columns: Array<{ id: keyof EmployeeData; label: string; minWidth?: number }> = [
     { id: "id", label: "ID", minWidth: 60 },
@@ -73,10 +91,19 @@ export const MuiTableExample = () => {
   const filteredAndSortedData = useMemo(() => {
     let filtered = data;
 
-    if (searchValue) {
+    if (debouncedSearch) {
+      const lowerSearch = debouncedSearch.toLowerCase();
+      const searchTerms = lowerSearch.split(' ').filter(t => t.length > 0);
+
       filtered = filtered.filter((row) => {
-        const value = row[searchColumn];
-        return String(value).toLowerCase().includes(searchValue.toLowerCase());
+        const rowText = Object.entries(row)
+          .filter(([key]) => key !== 'id') // IDは検索対象外
+          .map(([_, value]) => String(value))
+          .join(' ')
+          .toLowerCase();
+
+        // AND検索: すべての単語を含む行のみ
+        return searchTerms.every(term => rowText.includes(term));
       });
     }
 
@@ -92,7 +119,7 @@ export const MuiTableExample = () => {
       }
       return 0;
     });
-  }, [data, searchColumn, searchValue, order, orderBy]);
+  }, [data, debouncedSearch, order, orderBy]);
 
   const toggleColumnVisibility = (column: keyof EmployeeData) => {
     setColumnVisibility((prev) => ({
@@ -107,28 +134,14 @@ export const MuiTableExample = () => {
         Material UI Table Example
       </Typography>
 
-      <Box sx={{ mb: 3, display: "flex", gap: 2, justifyContent: "flex-end" }}>
+      <Box sx={{ mb: 3, display: "flex", justifyContent: "flex-end" }}>
         <TextField
-          label="Search"
+          label="フリーワード検索（スペース区切りでAND検索）"
           variant="outlined"
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
-          sx={{ width: 300 }}
+          sx={{ width: 400 }}
         />
-        <FormControl sx={{ width: 200 }}>
-          <InputLabel>Search Column</InputLabel>
-          <Select
-            value={searchColumn}
-            label="Search Column"
-            onChange={(e) => setSearchColumn(e.target.value as keyof EmployeeData)}
-          >
-            {columns.map((col) => (
-              <MenuItem key={col.id} value={col.id}>
-                {col.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
       </Box>
 
       <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
@@ -175,6 +188,10 @@ export const MuiTableExample = () => {
             <Table stickyHeader>
               <TableHead>
                 <TableRow>
+                  <TableCell
+                    sx={{ fontWeight: "bold", backgroundColor: "#f5f5f5", width: 50 }}
+                  >
+                  </TableCell>
                   {visibleColumns.map((column) => (
                     <TableCell
                       key={column.id}
@@ -194,7 +211,22 @@ export const MuiTableExample = () => {
               </TableHead>
               <TableBody>
                 {filteredAndSortedData.map((row) => (
-                  <TableRow hover key={row.id}>
+                  <TableRow
+                    hover
+                    key={row.id}
+                    sx={{
+                      backgroundColor: selectedRows.has(row.id) ? "#e3f2fd" : "inherit",
+                      "&:hover": {
+                        backgroundColor: selectedRows.has(row.id) ? "#bbdefb !important" : undefined,
+                      },
+                    }}
+                  >
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={selectedRows.has(row.id)}
+                        onChange={() => toggleRowSelection(row.id)}
+                      />
+                    </TableCell>
                     {visibleColumns.map((column) => {
                       const value = row[column.id];
                       return (
@@ -214,7 +246,7 @@ export const MuiTableExample = () => {
           <Paper sx={{ p: 2, mt: 2 }}>
             <Typography variant="body2">
               Total Rows: {filteredAndSortedData.length} | Visible Columns:{" "}
-              {visibleColumns.length}
+              {visibleColumns.length} | Selected: {selectedRows.size}
             </Typography>
           </Paper>
         </Box>
