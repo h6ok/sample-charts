@@ -82,24 +82,24 @@ export const TanStackTableExample = () => {
       { accessorKey: "education", header: "Education", size: 120 },
       { accessorKey: "certification", header: "Certification", size: 150 },
     ],
-    [selectedRows]
+    [selectedRows],
   );
 
   const filteredData = useMemo(() => {
     if (!debouncedSearch) return data;
 
     const lowerSearch = debouncedSearch.toLowerCase();
-    const searchTerms = lowerSearch.split(' ').filter(t => t.length > 0);
+    const searchTerms = lowerSearch.split(" ").filter((t) => t.length > 0);
 
     return data.filter((row) => {
       const rowText = Object.entries(row)
-        .filter(([key]) => key !== 'id') // IDは検索対象外
+        .filter(([key]) => key !== "id") // IDは検索対象外
         .map(([_, value]) => String(value))
-        .join(' ')
+        .join(" ")
         .toLowerCase();
 
       // AND検索: すべての単語を含む行のみ
-      return searchTerms.every(term => rowText.includes(term));
+      return searchTerms.every((term) => rowText.includes(term));
     });
   }, [data, debouncedSearch]);
 
@@ -128,7 +128,7 @@ export const TanStackTableExample = () => {
           value={searchValue}
           onChange={(e) => setSearchValue(e.target.value)}
           className="search-input"
-          style={{ width: '400px' }}
+          style={{ width: "400px" }}
         />
       </div>
 
@@ -136,7 +136,8 @@ export const TanStackTableExample = () => {
         <div className="column-visibility-sidebar">
           <h3>Column Visibility</h3>
           <div className="checkbox-list">
-            {table.getAllLeafColumns()
+            {table
+              .getAllLeafColumns()
               .filter((column) => column.id !== "select")
               .map((column) => (
                 <label key={column.id} className="checkbox-label">
@@ -166,7 +167,7 @@ export const TanStackTableExample = () => {
                       >
                         {flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                         {{
                           asc: " 🔼",
@@ -181,11 +182,19 @@ export const TanStackTableExample = () => {
                 {table.getRowModel().rows.map((row) => (
                   <tr
                     key={row.id}
-                    className={selectedRows.has(row.original.id) ? "selected-row" : ""}
+                    className={
+                      selectedRows.has(row.original.id) ? "selected-row" : ""
+                    }
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <td key={cell.id} style={{ width: cell.column.getSize() }}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      <td
+                        key={cell.id}
+                        style={{ width: cell.column.getSize() }}
+                      >
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext(),
+                        )}
                       </td>
                     ))}
                   </tr>
@@ -195,7 +204,9 @@ export const TanStackTableExample = () => {
           </div>
 
           <div className="table-info">
-            Total Rows: {filteredData.length} | Visible Columns: {table.getVisibleLeafColumns().length} | Selected: {selectedRows.size}
+            Total Rows: {filteredData.length} | Visible Columns:{" "}
+            {table.getVisibleLeafColumns().length} | Selected:{" "}
+            {selectedRows.size}
           </div>
         </div>
       </div>
