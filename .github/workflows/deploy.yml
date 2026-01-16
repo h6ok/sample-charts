@@ -22,14 +22,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/actions-setup@v4
         with:
-          node-version: "20"
-          cache: "npm"
+          version: "10"
 
       - name: Install dependencies
-        run: pnpm i --frozen-lockfile
+        run: pnpm install
 
       - name: Build
         run: pnpm build
